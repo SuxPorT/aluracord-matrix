@@ -1,36 +1,7 @@
 import { Box, Button, Text, TextField, Image } from "@skynexui/components";
+import { useState } from "react";
+import { useRouter } from "next/router";
 import appConfig from "../config.json";
-
-function GlobalStyle() {
-  return (
-    <style global jsx>{`
-      * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-        list-style: none;
-      }
-      body {
-        font-family: "Open Sans", sans-serif;
-      }
-      /* App fit Height */
-      html,
-      body,
-      #__next {
-        min-height: 100vh;
-        display: flex;
-        flex: 1;
-      }
-      #__next {
-        flex: 1;
-      }
-      #__next > * {
-        flex: 1;
-      }
-      /* ./App fit Height */
-    `}</style>
-  );
-}
 
 function Title(props) {
   const Tag = props.tag || "h1";
@@ -62,12 +33,13 @@ function Title(props) {
 // export default HomePage
 
 export default function PaginaInicial() {
-  const username = "suxport";
-  const name = "Alexys Santiago";
+  const [username, setUsername] = useState("suxport");
+  const [name, setRealName] = useState("Alexys Santiago");
+  const [image, setImage] = useState(`https://github.com/${username}.png`);
+  const roteamento = useRouter();
 
   return (
     <>
-      <GlobalStyle />
       <Box
         styleSheet={{
           display: "flex",
@@ -102,6 +74,11 @@ export default function PaginaInicial() {
           {/* Formulário */}
           <Box
             as="form"
+            onSubmit={(e) => {
+              e.preventDefault();
+              console.log("Alguém submeteu o form");
+              roteamento.push("/chat");
+            }}
             styleSheet={{
               display: "flex",
               flexDirection: "column",
@@ -123,7 +100,36 @@ export default function PaginaInicial() {
               {appConfig.name}
             </Text>
 
+            {/* <input
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+            /> */}
             <TextField
+              value={username}
+              onChange={async (e) => {
+                // Onde está o valor?
+                const valor = e.target.value;
+
+                // Trocar o valor da variável
+                // através do React e avise quem precisa
+                setImage(`https://github.com/${valor}.png`);
+                setUsername(valor);
+
+                // Quantidade máxima de requisições por hora: 60
+                const url = `https://api.github.com/users/${valor}`;
+                const response = await fetch(url);
+
+                if (response.status === 200) {
+                  const data = await response.json();
+
+                  setRealName(data.name);
+                } else {
+                  console.log("Usuário não encontrado na API do GitHub");
+
+                  setRealName("#imersao-alura #aluracord");
+                }
+              }}
               fullWidth
               textFieldColors={{
                 neutral: {
@@ -166,32 +172,42 @@ export default function PaginaInicial() {
               minHeight: "240px",
             }}
           >
-            <Image
-              styleSheet={{
-                borderRadius: "50%",
-                marginBottom: "16px",
-              }}
-              src={`https://github.com/${username}.png`}
-            />
-            <Text
-              variant="body4"
-              styleSheet={{
-                color: appConfig.theme.colors.neutrals[200],
-                backgroundColor: appConfig.theme.colors.neutrals[900],
-                padding: "3px 10px",
-                borderRadius: "1000px",
-              }}
-            >
-              {username}
-            </Text>
-            <Text
-              styleSheet={{
-                color: appConfig.theme.colors.neutrals[200],
-                margin: "5px 0px",
-              }}
-            >
-              {name}
-            </Text>
+            {username.length > 2 && (
+              <Image
+                styleSheet={{
+                  borderRadius: "50%",
+                  marginBottom: "16px",
+                }}
+                src={image}
+                onError={(e) => {
+                  e.currentTarget.src = appConfig.stickers[28];
+                }}
+              />
+            )}
+            {username.length > 2 && (
+              <Text
+                variant="body4"
+                styleSheet={{
+                  color: appConfig.theme.colors.neutrals[200],
+                  backgroundColor: appConfig.theme.colors.neutrals[900],
+                  padding: "3px 10px",
+                  borderRadius: "1000px",
+                }}
+              >
+                {username}
+              </Text>
+            )}
+            {username.length > 2 && (
+              <Text
+                styleSheet={{
+                  color: appConfig.theme.colors.neutrals[200],
+                  margin: "5px 0px",
+                  textAlign: "center",
+                }}
+              >
+                <a href={`https://api.github.com/users/${username}`}>{name}</a>
+              </Text>
+            )}
           </Box>
           {/* Photo Area */}
         </Box>
