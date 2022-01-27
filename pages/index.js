@@ -68,7 +68,7 @@ export default function PaginaInicial() {
             padding: "32px",
             margin: "16px",
             boxShadow: "0 2px 10px 0 rgb(0 0 0 / 20%)",
-            backgroundColor: appConfig.theme.colors.customs["Dark Purple 2"],
+            backgroundColor: appConfig.theme.colors.neutrals[700],
           }}
         >
           {/* Formulário */}
@@ -164,7 +164,7 @@ export default function PaginaInicial() {
               alignItems: "center",
               maxWidth: "200px",
               padding: "16px",
-              backgroundColor: appConfig.theme.colors.customs["Dark Purple"],
+              backgroundColor: appConfig.theme.colors.neutrals[900],
               border: "1px solid",
               borderColor: appConfig.theme.colors.customs["Dark Sienna"],
               borderRadius: "10px",
