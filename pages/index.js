@@ -19,19 +19,6 @@ function Title(props) {
   );
 }
 
-// Componente React
-// function HomePage() {
-//     // JSX
-//     return (
-//         <div>
-//             <GlobalStyle />
-//             <Titulo tag="h2">Boas vindas de volta!</Titulo>
-//             <h2>Discord - Alura Matrix</h2>
-//         </div>
-//     )
-// }
-// export default HomePage
-
 export default function PaginaInicial() {
   const [username, setUsername] = useState("suxport");
   const [name, setRealName] = useState("Alexys Santiago");
@@ -100,11 +87,6 @@ export default function PaginaInicial() {
               {appConfig.name}
             </Text>
 
-            {/* <input
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-            /> */}
             <TextField
               value={username}
               onChange={async (e) => {
@@ -205,7 +187,9 @@ export default function PaginaInicial() {
                   textAlign: "center",
                 }}
               >
-                <a href={`https://api.github.com/users/${username}`}>{name}</a>
+                <a href={`https://github.com/{username}`} target="_blank">
+                  {name}
+                </a>
               </Text>
             )}
           </Box>

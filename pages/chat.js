@@ -1,30 +1,49 @@
 import { Box, Text, TextField, Image, Button } from "@skynexui/components";
-import { useState } from "react";
+import { createClient } from "@supabase/supabase-js";
+import { useState, useEffect } from "react";
 import appConfig from "../config.json";
+
+const SUPABASE_ANON_KEY =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJyb2xlIjoiYW5vbiIsImlhdCI6MTY0MzI5MzQ3MywiZXhwIjoxOTU4ODY5NDczfQ.wJuX6EVotL7cFpYsbL28sXqWP-Jyl9RaK1sZt3HJMpg";
+const SUPABASE_URL = "https://kcrdeqjtounwsbjeiywj.supabase.co";
+const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 export default function ChatPage() {
   const [mensagem, setMensagem] = useState("");
   const [listaDeMensagens, setListaDeMensagens] = useState([]);
 
-  /*
-    // Usuário
-    - Usuário digita no campo textarea
-    - Aperta enter para enviar
-    - Tem que adicionar o texto na listagem
-    
-    // Dev
-    - [X] Campo criado
-    - [X] Vamos usar o onChange usa o useState (ter if pra caso seja enter pra limpar a variavel)
-    - [X] Lista de mensagens 
-    */
+  useEffect(() => {
+    supabaseClient
+      .from("mensagens")
+      .select("*")
+      .order("id", { ascending: false })
+      .then(({ data }) => {
+        console.log("Dados da consulta", data);
+
+        setListaDeMensagens(data);
+      });
+  }, []);
+
   function handleNovaMensagem(novaMensagem) {
+    // Formatação da data na criação da mensagem
+    const offset = new Date().getTimezoneOffset() * 60000;
+    const localISOTime = new Date(Date.now() - offset).toISOString();
+
     const mensagem = {
-      id: listaDeMensagens.length + 1,
-      de: "vanessametonini",
+      created_at: localISOTime,
+      de: "suxport",
       texto: novaMensagem,
     };
 
-    setListaDeMensagens([mensagem, ...listaDeMensagens]);
+    supabaseClient
+      .from("mensagens")
+      .insert([mensagem]) // Objeto com os MESMOS CAMPOS do superbase
+      .then(({ data }) => {
+        console.log("Criando mensagem", data);
+
+        setListaDeMensagens([data[0], ...listaDeMensagens]);
+      });
+
     setMensagem("");
   }
 
@@ -144,20 +163,24 @@ function Header() {
 
 function MessageList(props) {
   console.log(props);
+
   return (
     <Box
       tag="ul"
       styleSheet={{
-        overflow: "scroll",
+        overflow: "auto",
         display: "flex",
         flexDirection: "column-reverse",
         flex: 1,
         color: appConfig.theme.colors.neutrals["000"],
         marginBottom: "16px",
-        overflowX: "hidden",
       }}
     >
       {props.mensagens.map((mensagem) => {
+        const dateTime = new Date(mensagem.created_at)
+          .toLocaleString("pt-BR")
+          .slice(0, -3);
+
         return (
           <Text
             key={mensagem.id}
@@ -184,7 +207,7 @@ function MessageList(props) {
                   display: "inline-block",
                   marginRight: "8px",
                 }}
-                src={`https://github.com/vanessametonini.png`}
+                src={`https://github.com/${mensagem.de}.png`}
               />
               <Text tag="strong">{mensagem.de}</Text>
               <Text
@@ -195,7 +218,7 @@ function MessageList(props) {
                 }}
                 tag="span"
               >
-                {new Date().toLocaleDateString()}
+                {dateTime}
               </Text>
             </Box>
             {mensagem.texto}
