@@ -20,8 +20,8 @@ function Title(props) {
 }
 
 export default function PaginaInicial() {
-  const [username, setUsername] = useState("suxport");
-  const [name, setRealName] = useState("Alexys Santiago");
+  const [username, setUsername] = useState("alura-challenges");
+  const [name, setRealName] = useState("#imersao-alura #aluracord");
   const [image, setImage] = useState(`https://github.com/${username}.png`);
   const roteamento = useRouter();
 
@@ -64,7 +64,7 @@ export default function PaginaInicial() {
             onSubmit={(e) => {
               e.preventDefault();
               console.log("Alguém submeteu o form");
-              roteamento.push("/chat");
+              roteamento.push(`/chat?username=${username}`);
             }}
             styleSheet={{
               display: "flex",
@@ -187,7 +187,7 @@ export default function PaginaInicial() {
                   textAlign: "center",
                 }}
               >
-                <a href={`https://github.com/{username}`} target="_blank">
+                <a href={`https://github.com/${username}`} target="_blank">
                   {name}
                 </a>
               </Text>
