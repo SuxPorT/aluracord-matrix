@@ -1,6 +1,8 @@
 import { Box, Text, TextField, Image, Button } from "@skynexui/components";
 import { createClient } from "@supabase/supabase-js";
+import { useRouter } from "next/router";
 import { useState, useEffect } from "react";
+import { ButtonSendSticker } from "../src/components/ButtonSendSticker";
 import appConfig from "../config.json";
 
 const SUPABASE_ANON_KEY =
@@ -8,7 +10,18 @@ const SUPABASE_ANON_KEY =
 const SUPABASE_URL = "https://kcrdeqjtounwsbjeiywj.supabase.co";
 const supabaseClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
+function escutaMensagensEmTempoReal(adicionaMensagem) {
+  return supabaseClient
+    .from("mensagens")
+    .on("INSERT", (respostaLive) => {
+      adicionaMensagem(respostaLive.new);
+    })
+    .subscribe();
+}
+
 export default function ChatPage() {
+  const roteamento = useRouter();
+  const usuarioLogado = roteamento.query.username;
   const [mensagem, setMensagem] = useState("");
   const [listaDeMensagens, setListaDeMensagens] = useState([]);
 
@@ -22,6 +35,14 @@ export default function ChatPage() {
 
         setListaDeMensagens(data);
       });
+
+    escutaMensagensEmTempoReal((novaMensagem) => {
+      console.log("Nova mensagem:", novaMensagem);
+
+      setListaDeMensagens((valorAtualDaLista) => {
+        return [novaMensagem, ...valorAtualDaLista];
+      });
+    });
   }, []);
 
   function handleNovaMensagem(novaMensagem) {
@@ -31,7 +52,7 @@ export default function ChatPage() {
 
     const mensagem = {
       created_at: localISOTime,
-      de: "suxport",
+      de: usuarioLogado,
       texto: novaMensagem,
     };
 
@@ -40,8 +61,6 @@ export default function ChatPage() {
       .insert([mensagem]) // Objeto com os MESMOS CAMPOS do superbase
       .then(({ data }) => {
         console.log("Criando mensagem", data);
-
-        setListaDeMensagens([data[0], ...listaDeMensagens]);
       });
 
     setMensagem("");
@@ -128,6 +147,15 @@ export default function ChatPage() {
                 backgroundColor: appConfig.theme.colors.neutrals[800],
                 marginRight: "12px",
                 color: appConfig.theme.colors.neutrals[200],
+              }}
+            />
+            <ButtonSendSticker
+              onStickerClick={(sticker) => {
+                console.log(
+                  "[USANDO O COMPONENTE] Salva esse sticker no banso"
+                );
+
+                handleNovaMensagem(":sticker: " + sticker);
               }}
             />
           </Box>
@@ -221,7 +249,24 @@ function MessageList(props) {
                 {dateTime}
               </Text>
             </Box>
-            {mensagem.texto}
+            {mensagem.texto.startsWith(":sticker:") ? (
+              <Image
+                src={mensagem.texto.replace(":sticker:", "")}
+                styleSheet={{
+                  width: "10%",
+                  padding: "10px",
+                  borderRadius: "5px",
+                  transition: "all 0.3s",
+                  hover: {
+                    backgroundColor: appConfig.theme.colors.neutrals[600],
+                    width: "15%",
+                  },
+                }}
+              />
+            ) : (
+              mensagem.texto
+            )}
+            {/* {mensagem.texto} */}
           </Text>
         );
       })}
